@@ -1,0 +1,60 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"regexp"
+	"strings"
+)
+
+// Function to handle argument parsing and extraction of color, substring, text, and banner
+func handleArguments(args []string, banner string) (string, string, string, string) {
+	var color string
+	var substring string
+	var text string
+
+	// Parse arguments
+	for _, arg := range args[1:] {
+		// Check for --color=<color>
+		if strings.HasPrefix(arg, "--color=") {
+			re := regexp.MustCompile(`--color=(\w+)`)
+			if re.MatchString(arg) {
+				color = convertColorNameToCode(re.FindStringSubmatch(arg)[1])
+				if color == "" {
+					fmt.Println("Invalid color. Supported colors: red, green, yellow, blue, magenta, cyan.")
+					os.Exit(2)
+				}
+			} else {
+				fmt.Println("Invalid color format. Use --color=<color>.")
+				os.Exit(3)
+			}
+		} else if arg == "standard" || arg == "shadow" || arg == "thinkertoy" {
+			// Banner option handling
+			switch arg {
+			case "shadow":
+				banner = "banner/shadow.txt"
+			case "thinkertoy":
+				banner = "banner/thinkertoy.txt"
+			default:
+				banner = "banner/standard.txt"
+			}
+		} else {
+			// Assume it's either the substring or the full text to be printed
+			if substring == "" && text == "" {
+				// First unrecognized argument is the substring or full text
+				substring = arg
+			} else if text == "" {
+				// Second unrecognized argument is the full text
+				text = arg
+			}
+		}
+	}
+
+	// If no text argument is provided, consider the substring as the text to be printed
+	if text == "" && substring != "" {
+		text = substring
+		substring = ""
+	}
+
+	return color, substring, text, banner
+}

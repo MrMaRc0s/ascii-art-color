@@ -1,0 +1,42 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	// Ensure correct argument usage
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: go run . [OPTION] [STRING] \nEX: go run . --color=<color> <substring to be colored> 'something'")
+		os.Exit(1)
+	}
+	// Default banner is "standard"
+	banner := "banner/standard.txt"
+	// Call the argument handling function to extract necessary values (including banner)
+	color, substring, text, banner := handleArguments(os.Args, banner)
+
+	// If no text is provided, print usage
+	if text == "" {
+		fmt.Println("Usage: go run . [OPTION] [STRING]")
+		os.Exit(4)
+	}
+
+	// Read the banner file
+	bannerFile, err := os.ReadFile(banner)
+	if err != nil {
+		fmt.Println("There was a problem reading the banner file template:", banner)
+		os.Exit(5)
+	}
+
+	// Split the lines of the file into a slice
+	line := strings.Replace(string(bannerFile), "\r\n", "\n", -1)
+	lines := strings.Split(line, "\n")
+
+	// Split the input string into lines, based on literal newline characters
+	sepText := strings.Split(text, "\\n") // Handling literal "\n" from the input
+
+	// Print the ASCII Art based on the input, applying color if needed
+	PrintAsciiArtRecursive(sepText, lines, color, substring)
+}
