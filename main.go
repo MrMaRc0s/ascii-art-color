@@ -7,8 +7,10 @@ import (
 )
 
 func main() {
+	banner := "banner/standard.txt"
+
 	// Argument handling
-	banner, color, substring, err := handleArguments(os.Args)
+	color, substring, err := handleArguments(os.Args)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

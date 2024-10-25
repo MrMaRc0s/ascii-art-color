@@ -3,51 +3,38 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 // Argument handling function
-func handleArguments(args []string) (string, string, string, error) {
-	// Check the number of arguments
+func handleArguments(args []string) (string, string, error) {
+	usageMsg := "Usage: go run . [OPTION] [STRING]\nEX: go run . --color=<color> <substring to be colored> \"something\""
+
 	if len(args) < 2 || len(args) > 5 {
-		return "", "", "", fmt.Errorf("usage: go run . [OPTION] [STRING]\nEX: go run . --color=<color> <substring to be colored> 'something'")
+		return "", "", fmt.Errorf(usageMsg)
 	}
 
-	var banner string
-	if len(args) == 5 {
-		banner = args[3]
-		switch banner {
-		case "standard":
-			banner = "banner/standard.txt"
-		case "shadow":
-			banner = "banner/shadow.txt"
-		case "thinkertoy":
-			banner = "banner/thinkertoy.txt"
-		default:
-			return "", "", "", fmt.Errorf("use a valid banner template")
+	var color, substring string
+	if strings.HasPrefix(args[1], "--color") {
+		re := regexp.MustCompile(`^--color=(\w*)$`)
+		matches := re.FindStringSubmatch(args[1])
+
+		if matches == nil || matches[1] == "" {
+			return "", "", fmt.Errorf("Error: No color specified after --color=. Please provide a valid color.")
+		}
+
+		color = matches[1]
+		if _, valid := ansiColors[color]; !valid {
+			return "", "", fmt.Errorf("Invalid color. Available colors: red, green, yellow, blue, magenta, cyan")
+		}
+
+		if len(args) == 4 {
+			substring = args[2]
 		}
 	} else {
-		banner = "banner/standard.txt"
+		color = ""
+		substring = ""
 	}
 
-	// Check for color flag
-	re := regexp.MustCompile(`--color=(\w+)`)
-	flag := args[1]
-	matches := re.FindStringSubmatch(flag)
-	if matches == nil {
-		return "", "", "", fmt.Errorf("must input correct color format (--color=<color>)")
-	}
-
-	color := matches[1]
-	// Check if the color is valid
-	if _, ok := colorCodes[color]; !ok {
-		return "", "", "", fmt.Errorf("invalid color. Available colors: red, green, yellow, blue, magenta, cyan")
-	}
-
-	// Get the substring if provided
-	substring := ""
-	if len(args) == 4 {
-		substring = args[2]
-	}
-
-	return banner, color, substring, nil
+	return color, substring, nil
 }

@@ -4,37 +4,78 @@ import (
 	"fmt"
 )
 
+// ANSI color codes
+var ansiColors = map[string]string{
+	"red":     "\033[31m",
+	"green":   "\033[32m",
+	"yellow":  "\033[33m",
+	"blue":    "\033[34m",
+	"magenta": "\033[35m",
+	"cyan":    "\033[36m",
+	"reset":   "\033[0m",
+}
+
 func PrintAsciiArtRecursive(sentences []string, textFile []string, color, substring string) {
-	// Base case: If no sentences left, return
 	if len(sentences) == 0 {
 		return
 	}
-	// Process the first sentence
 	if sentences[0] != "" {
 		printSentenceAsciiRecursive(sentences[0], textFile, 1, color, substring)
 	} else {
-		// If the sentence is empty (i.e., there was a '\n'), print an empty line
 		fmt.Println()
 	}
-	// Recursive call to process the remaining sentences
 	PrintAsciiArtRecursive(sentences[1:], textFile, color, substring)
 }
 
 func printSentenceAsciiRecursive(word string, textFile []string, h int, color, substring string) {
-	// Base case: If we've processed all the lines for this character height, return
 	if h > 8 {
 		return
 	}
-	// Print the current line for each character in the word
-	for i := 0; i < len(word); i++ {
-		for lineIndex, line := range textFile {
-			if lineIndex == (int(word[i])-32)*9+h {
-				// Apply color using the new applyColor function
-				coloredLine := ApplyColor(line, color, substring)
-				fmt.Print(coloredLine)
+
+	// Flag to track if any substring match was found
+	foundSubstring := false
+
+	i := 0
+	for i < len(word) {
+		// Check if the substring matches at the current position
+		if substring != "" && i+len(substring) <= len(word) && word[i:i+len(substring)] == substring {
+			// Color the substring characters
+			for j := 0; j < len(substring); j++ {
+				for lineIndex, line := range textFile {
+					if lineIndex == (int(word[i+j])-32)*9+h {
+						fmt.Print(ansiColors[color] + line + ansiColors["reset"])
+					}
+				}
+			}
+			foundSubstring = true // Set flag since we found the substring
+			i += len(substring)   // Move index past the colored substring
+		} else {
+			// Print normally for non-matching characters
+			for lineIndex, line := range textFile {
+				if lineIndex == (int(word[i])-32)*9+h {
+					// Color the whole line if substring is not specified
+					if substring == "" {
+						fmt.Print(ansiColors[color] + line + ansiColors["reset"])
+					} else {
+						fmt.Print(line)
+					}
+				}
+			}
+			i++
+		}
+	}
+
+	// Color the whole string if no substring was matched and substring is non-empty
+	if substring != "" && !foundSubstring {
+		for i := 0; i < len(word); i++ {
+			for lineIndex, line := range textFile {
+				if lineIndex == (int(word[i])-32)*9+h {
+					fmt.Print(ansiColors[color] + line + ansiColors["reset"])
+				}
 			}
 		}
 	}
+
 	fmt.Println()
 	// Recursive call for the next line height
 	printSentenceAsciiRecursive(word, textFile, h+1, color, substring)
