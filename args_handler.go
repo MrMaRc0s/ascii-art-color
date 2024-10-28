@@ -25,7 +25,7 @@ func handleArguments(args []string) (string, string, error) {
 
 		color = matches[1]
 		if _, valid := ansiColors[color]; !valid {
-			return "", "", fmt.Errorf("Invalid color. Available colors: red, green, yellow, blue, magenta, cyan")
+			return "", "", fmt.Errorf("Invalid color. Available colors: red, green, yellow, blue, magenta, cyan, orange")
 		}
 
 		if len(args) == 4 {

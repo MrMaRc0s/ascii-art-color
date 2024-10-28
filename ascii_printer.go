@@ -12,6 +12,7 @@ var ansiColors = map[string]string{
 	"blue":    "\033[34m",
 	"magenta": "\033[35m",
 	"cyan":    "\033[36m",
+	"orange":  "\033[38;5;214m",
 	"reset":   "\033[0m",
 }
 
@@ -53,7 +54,7 @@ func printSentenceAsciiRecursive(word string, textFile []string, h int, color, s
 			// Print normally for non-matching characters
 			for lineIndex, line := range textFile {
 				if lineIndex == (int(word[i])-32)*9+h {
-					// Color the whole line if substring is not specified
+					// Only color the whole line if substring is empty (no substring mode)
 					if substring == "" {
 						fmt.Print(ansiColors[color] + line + ansiColors["reset"])
 					} else {
@@ -65,8 +66,9 @@ func printSentenceAsciiRecursive(word string, textFile []string, h int, color, s
 		}
 	}
 
-	// Color the whole string if no substring was matched and substring is non-empty
+	// Color the whole string if no substring was matched and a substring was specified
 	if substring != "" && !foundSubstring {
+		// Print the whole string in color if substring wasn't found
 		for i := 0; i < len(word); i++ {
 			for lineIndex, line := range textFile {
 				if lineIndex == (int(word[i])-32)*9+h {
